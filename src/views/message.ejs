@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+  <div class="container">
+    <div class="container mt-4">
+      <h1><%= data.currentUser.full_name %></h1><br><br>
+      <h1>Message</h1>
+
+      <form action="/api/message/create" method="post" class="messageForm">
+        <div class="mb-3">
+          <label for="userid" class="form-label">User ID: </label>
+          <input
+            id="userid"
+            class="userID form-control"
+            type="text"
+            placeholder="User id..."
+            name="userId"
+            required />
+        </div>
+        <div class="mb-3">
+          <label for="message" class="form-label">Message: </label>
+          <input
+            id="message"
+            class="messageTEXT form-control"
+            type="text"
+            placeholder="Message"
+            name="messageText"
+            required />
+        </div>
+        <button type="submit" class="btn btn-success">Send</button>
+      </form>
+      <br />
+      <br />
+      <p>
+        <button
+          class="btn btn-primary"
+          type="button"
+          data-toggle="collapse"
+          data-target="#collapseExample"
+          aria-expanded="false"
+          aria-controls="collapseExample">
+          Yuborilgan hamma xabarlarni ko'rish
+        </button>
+        <button
+          class="btn btn-primary"
+          type="button"
+          data-toggle="collapse"
+          data-target="#collapseExampleQabul"
+          aria-expanded="false"
+          aria-controls="collapseExampleQabul">
+          Qabul qilingan hamma xabarlarni ko'rish
+        </button>
+      </p>
+      <div class="collapse" id="collapseExample">
+        <div class="card card-body">
+          <h1 class="fw-bold">Yuborilgan messagelar:</h1>
+          <br />
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Id</th>
+                <th scope="col">Message</th>
+                <th scope="col">From</th>
+                <th scope="col">To</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for (let index = 0; index < data.messages.length; index++) { %>
+              <% const element = data.messages[index]; %>
+                <% if (element.from === data.currentUser.id) { %>
+                  <tr>
+                    <th scope="row"><%= index+1 %></th>
+                    <td><%= element.id %></td>
+                    <td><%= element.message %></td>
+                    <td><%= data.currentUser.full_name %></td>
+                    <td><%= element.to %></td>
+                  </tr>
+                <% } %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <br><br>
+      <div class="collapse" id="collapseExampleQabul">
+        <div class="card card-body">
+          <h1 class="fw-bold">Qabul qilingan messagelar:</h1>
+          <br />
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Id</th>
+                <th scope="col">Message</th>
+                <th scope="col">From</th>
+                <th scope="col">To</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for (let index = 0; index < data.messages.length; index++) { %>
+              <% const element = data.messages[index]; %>
+                <% if (element.to === data.currentUser.id) { %>
+                  <tr>
+                    <th scope="row"><%= index+1 %></th>
+                    <td><%= element.id %></td>
+                    <td><%= element.message %></td>
+                    <td><%= element.from %></td>
+                    <td><%= data.currentUser.full_name %></td>
+                  </tr>
+                <% } %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <br><br>
+    </div>
+  </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+const OLMessageBox = document.getElementById('message-box');
+const getToken = getCookieValue("token")
+
+const chatFORM = document.querySelector(".messageForm")
+    chatFORM.addEventListener("submit", event => {
+      event.preventDefault()
+      const currentUserId = document.currentUser.id
+      console.log(currentUserId)
+      const message = event.target.elements.message.value
+      const userId = event.target.elements.userid.value
+      socket.emit("new-message", {userId, message})
+
+      event.target.elements.message.value = ""
+    })
+
+        const socket = io("http://localhost:7777", {
+            query: { authorization: getToken },
+        })
+
+        function getCookieValue(name) {
+  const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+  for (const cookie of cookies) {
+    const [cookieName, cookieValue] = cookie.split('=');
+    if (cookieName === name) {
+      return decodeURIComponent(cookieValue);
+    }
+  }
+  return null;
+}
+    </script>
+</body>
+</html>
